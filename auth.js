@@ -17,17 +17,17 @@
   let loadingCloud = false;
 
   function showMessage(text = '', type = '') {
-    message.textContent = text;
+    message.textContent = window.I18N?.text?.(text) || text;
     message.className = `auth-message ${type}`.trim();
   }
 
   function showProfileMessage(text = '', type = '') {
-    profileMessage.textContent = text;
+    profileMessage.textContent = window.I18N?.text?.(text) || text;
     profileMessage.className = `auth-message ${type}`.trim();
   }
 
   function displayName(user) {
-    return user?.user_metadata?.display_name || user?.email?.split('@')[0] || 'Пользователь';
+    return user?.user_metadata?.display_name || user?.email?.split('@')[0] || (window.I18N?.text?.('Пользователь') || 'Пользователь');
   }
 
   function sanitizeUsername(value) {
@@ -41,13 +41,14 @@
 
   function setSaveLabel(text) {
     const el = document.getElementById('saveState');
-    if (el) el.textContent = text;
+    if (el) el.textContent = window.I18N?.text?.(text) || text;
   }
 
   function renderAuth() {
     setupView.hidden = configured;
     signedOutView.hidden = !configured || Boolean(session);
     signedInView.hidden = !configured || !session;
+    window.I18N?.translate?.(dialog);
 
     if (!configured) {
       accountButton.textContent = 'Локально';
@@ -66,7 +67,14 @@
     accountButton.title = session.user.email || name;
     document.getElementById('accountName').textContent = name;
     document.getElementById('accountEmail').textContent = session.user.email || '';
-    document.getElementById('accountAvatar').textContent = name.slice(0, 1).toUpperCase();
+    const accountAvatar = document.getElementById('accountAvatar');
+    const avatarUrl = window.normalizeProfileAvatarUrl?.(myProfile?.public_data?.avatarUrl) || '';
+    if (avatarUrl) {
+      accountAvatar.innerHTML = `<img src="${escapeHtml(avatarUrl)}" alt="${escapeHtml(name)}" onerror="this.parentElement.textContent='${escapeHtml(name.slice(0, 1).toUpperCase())}'">`;
+    } else {
+      accountAvatar.textContent = name.slice(0, 1).toUpperCase();
+    }
+    window.I18N?.translate?.(dialog);
   }
 
   function defaultProfile() {
@@ -80,7 +88,7 @@
       bio: '',
       avatar_toon: state.toons?.boxten?.owned ? 'boxten' : (TOON_DATA[0]?.id || 'boxten'),
       is_public: true,
-      public_data: window.buildPublicSnapshot?.() || {},
+      public_data: { ...(window.buildPublicSnapshot?.() || {}), avatarUrl: '' },
       updated_at: new Date().toISOString(),
     };
   }
@@ -127,7 +135,10 @@
     if (!configured || !session) return;
     if (!myProfile) await ensureProfile();
     if (!myProfile) return;
-    const snapshot = window.buildPublicSnapshot?.() || {};
+    const snapshot = {
+      ...(window.buildPublicSnapshot?.() || {}),
+      avatarUrl: window.normalizeProfileAvatarUrl?.(myProfile?.public_data?.avatarUrl) || '',
+    };
     const updatedAt = new Date().toISOString();
     const { error } = await client
       .from('public_profiles')
@@ -159,7 +170,7 @@
 
     await syncPublicSnapshot();
     setSaveLabel('Сохранено в облаке');
-    document.getElementById('cloudStatusText').textContent = `Синхронизировано: ${new Date().toLocaleString('ru-RU')}`;
+    document.getElementById('cloudStatusText').textContent = `Синхронизировано: ${new Date().toLocaleString(window.I18N?.locale?.() || 'ru-RU')}`;
     if (showToast) toast('Прогресс синхронизирован');
   }
 
@@ -192,7 +203,7 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       renderAll();
       setSaveLabel('Загружено из облака');
-      document.getElementById('cloudStatusText').textContent = `Последнее облачное сохранение: ${new Date(data.updated_at).toLocaleString('ru-RU')}`;
+      document.getElementById('cloudStatusText').textContent = `Последнее облачное сохранение: ${new Date(data.updated_at).toLocaleString(window.I18N?.locale?.() || 'ru-RU')}`;
     } else {
       await client.from('user_progress').upsert({
         user_id: session.user.id,
@@ -248,11 +259,12 @@
 
   function fillProfileForm(profile) {
     const toonSelect = document.getElementById('profileAvatarToon');
-    toonSelect.innerHTML = TOON_DATA.map(t => `<option value="${t.id}">${t.ru} · ${t.name}</option>`).join('');
+    toonSelect.innerHTML = TOON_DATA.map(t => `<option value="${t.id}">${escapeHtml(window.I18N?.entityName?.(t) || t.ru || t.name)}</option>`).join('');
     document.getElementById('profileUsername').value = profile.username || '';
     document.getElementById('profileDisplayName').value = profile.display_name || '';
     document.getElementById('profileBio').value = profile.bio || '';
     toonSelect.value = profile.avatar_toon || 'boxten';
+    document.getElementById('profileAvatarUrl').value = profile.public_data?.avatarUrl || '';
     document.getElementById('profileIsPublic').checked = profile.is_public !== false;
     updateProfilePreview();
   }
@@ -260,17 +272,19 @@
   function updateProfilePreview() {
     const username = sanitizeUsername(document.getElementById('profileUsername').value) || 'player';
     const display = document.getElementById('profileDisplayName').value.trim() || username;
-    const bio = document.getElementById('profileBio').value.trim() || 'Здесь появится короткое описание игрока.';
+    const bio = document.getElementById('profileBio').value.trim() || (window.I18N?.text?.('Здесь появится короткое описание игрока.') || 'Здесь появится короткое описание игрока.');
     const toonId = document.getElementById('profileAvatarToon').value || 'boxten';
-    const toon = TOON_DATA.find(t => t.id === toonId) || TOON_DATA[0];
+    const avatarUrl = window.normalizeProfileAvatarUrl?.(document.getElementById('profileAvatarUrl').value) || '';
     const snapshot = window.buildPublicSnapshot?.() || {};
+    const previewProfile = { username, display_name: display, avatar_toon: toonId, public_data: { avatarUrl } };
     document.getElementById('profilePreview').innerHTML = `
       <span class="preview-label">Предпросмотр</span>
-      <div class="preview-avatar">${entityArtwork(toon.name, initials(toon.name))}</div>
+      <div class="preview-avatar">${window.profileAvatarMarkup?.(previewProfile) || ''}</div>
       <strong>${escapeHtml(display)}</strong>
       <small>@${escapeHtml(username)}</small>
       <p>${escapeHtml(bio)}</p>
       <div class="preview-stats"><span>${snapshot.stats?.owned || 0} тунов</span><span>${snapshot.stats?.mastered || 0} мастерств</span></div>`;
+    window.I18N?.translate?.(document.getElementById('profilePreview'));
   }
 
   async function openMyPublicProfile() {
@@ -301,6 +315,8 @@
     const display_name = document.getElementById('profileDisplayName').value.trim().slice(0, 32);
     const bio = document.getElementById('profileBio').value.trim().slice(0, 180);
     const avatar_toon = document.getElementById('profileAvatarToon').value;
+    const avatarUrlRaw = document.getElementById('profileAvatarUrl').value.trim();
+    const avatarUrl = window.normalizeProfileAvatarUrl?.(avatarUrlRaw) || '';
     const is_public = document.getElementById('profileIsPublic').checked;
 
     if (!/^[a-z0-9_-]{3,24}$/.test(username)) {
@@ -311,6 +327,10 @@
       showProfileMessage('Введи отображаемое имя.', 'error');
       return;
     }
+    if (avatarUrlRaw && !avatarUrl) {
+      showProfileMessage('Укажи HTTPS-ссылку или путь к картинке внутри сайта.', 'error');
+      return;
+    }
 
     const updated_at = new Date().toISOString();
     const payload = {
@@ -319,7 +339,7 @@
       bio,
       avatar_toon,
       is_public,
-      public_data: window.buildPublicSnapshot?.() || {},
+      public_data: { ...(window.buildPublicSnapshot?.() || {}), avatarUrl },
       updated_at,
     };
 
@@ -351,7 +371,7 @@
       await navigator.clipboard.writeText(link);
       showProfileMessage('Ссылка скопирована.', 'good');
     } catch {
-      prompt('Скопируй ссылку:', link);
+      prompt(window.I18N?.text?.('Скопируй ссылку:') || 'Скопируй ссылку:', link);
     }
   }
 
@@ -438,7 +458,7 @@
   });
   document.getElementById('savePublicProfile').addEventListener('click', savePublicProfile);
   document.getElementById('copyProfileLink').addEventListener('click', copyMyProfileLink);
-  ['profileUsername','profileDisplayName','profileBio','profileAvatarToon'].forEach(id => {
+  ['profileUsername','profileDisplayName','profileBio','profileAvatarToon','profileAvatarUrl'].forEach(id => {
     document.getElementById(id).addEventListener(id === 'profileAvatarToon' ? 'change' : 'input', updateProfilePreview);
   });
   dialog.addEventListener('close', () => showMessage(''));
@@ -449,4 +469,13 @@
     showMessage(`Ошибка инициализации облака: ${error.message}`, 'error');
     window.setCommunityState?.({ profiles: [], status: 'error', error: error.message });
   });
+
+  window.refreshAuthLanguage = function refreshAuthLanguage() {
+    renderAuth();
+    if (profileDialog?.open && session) {
+      fillProfileForm(myProfile || defaultProfile());
+    }
+    window.I18N?.translate?.(dialog);
+    window.I18N?.translate?.(profileDialog);
+  };
 })();

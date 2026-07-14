@@ -8,6 +8,9 @@
 </head>
 <body>
   <main class="page active" style="max-width:850px">
+    <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
+      <button class="secondary-btn compact language-toggle" id="languageToggle" type="button" title="Switch to English" aria-label="Switch to English">EN</button>
+    </div>
     <div class="panel">
       <p class="eyebrow">Dandy’s Progress</p>
       <h1>Политика конфиденциальности</h1>
@@ -33,5 +36,10 @@
       <p><a href="index.html" style="color:var(--accent-warm)">Вернуться на сайт</a></p>
     </div>
   </main>
+  <script src="i18n.js"></script>
+  <script>
+    document.getElementById('languageToggle').addEventListener('click', () => window.I18N.toggle());
+    window.addEventListener('dandys-language-change', () => window.I18N.translate(document));
+  </script>
 </body>
 </html>

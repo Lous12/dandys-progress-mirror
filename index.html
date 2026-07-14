@@ -25,6 +25,7 @@
         <button class="nav-btn" data-page="twisteds"><span>◉</span> Твистеды</button>
         <button class="nav-btn" data-page="achievements"><span>✦</span> Достижения</button>
         <button class="nav-btn" data-page="data"><span>⇄</span> Данные</button>
+        <button class="nav-btn donation-nav" data-page="support" title="Поддержать развитие проекта"><span>♡</span> Поддержать</button>
       </nav>
 
       <div class="sidebar-footer">
@@ -41,6 +42,7 @@
           <p id="pageSubtitle">Вся коллекция, мастерства и исследования в одном месте.</p>
         </div>
         <div class="top-actions">
+          <button class="secondary-btn compact language-toggle" id="languageToggle" type="button" title="Switch to English" aria-label="Switch to English">EN</button>
           <span class="save-state" id="saveState">Сохранено</span>
           <button class="secondary-btn compact account-btn" id="accountButton">Локально</button>
           <button class="primary-btn compact" id="quickExport">Экспорт</button>
@@ -53,6 +55,7 @@
       <section class="page" id="page-twisteds"></section>
       <section class="page" id="page-achievements"></section>
       <section class="page" id="page-data"></section>
+      <section class="page" id="page-support"></section>
     </main>
   </div>
 
@@ -84,7 +87,7 @@
       </div>
       <div class="form-grid">
         <label>Название<input name="name" required placeholder="Например: Первый соло-ран" /></label>
-        <label>Уровень<select name="tier"><option>Личное</option><option>Бронза</option><option>Серебро</option><option>Золото</option><option>Радужное</option></select></label>
+        <label>Уровень<select name="tier"><option value="Личное">Личное</option><option value="Бронза">Бронза</option><option value="Серебро">Серебро</option><option value="Золото">Золото</option><option value="Радужное">Радужное</option></select></label>
         <label class="span-2">Описание<input name="description" required placeholder="Что нужно сделать" /></label>
         <label>Текущий прогресс<input name="current" type="number" min="0" value="0" /></label>
         <label>Цель<input name="target" type="number" min="1" value="1" /></label>
@@ -161,6 +164,8 @@
           <label class="span-2">Коротко о себе<textarea id="profileBio" maxlength="180" rows="3" placeholder="Например: фармлю исследования и учусь соло-ранам"></textarea></label>
           <label>Тун на аватаре<select id="profileAvatarToon"></select></label>
           <label class="profile-toggle"><input id="profileIsPublic" type="checkbox" checked><span>Показывать профиль другим игрокам</span></label>
+          <label class="span-2">Своя аватарка (ссылка или путь)<input id="profileAvatarUrl" maxlength="500" placeholder="assets/avatars/ukiol.png"></label>
+          <p class="field-help span-2">Оставь поле пустым, чтобы использовать выбранного туна. Можно указать HTTPS-ссылку или путь к картинке в репозитории GitHub.</p>
         </div>
       </div>
       <p class="note">В публичный профиль попадают только отметки коллекции, проценты исследований и общая статистика. Email, пароли и личные заметки не публикуются.</p>
@@ -188,6 +193,7 @@
   <input type="file" id="importFile" accept="application/json" hidden />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
+  <script src="i18n.js"></script>
   <script src="data.js"></script>
   <script src="app.js"></script>
   <script src="auth.js"></script>
