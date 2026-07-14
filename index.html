@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#151827" />
+  <title>Dandy’s Progress — трекер Dandy’s World</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-mark">DW</div>
+        <div>
+          <strong>Dandy’s Progress</strong>
+          <small>Личный трекер</small>
+        </div>
+      </div>
+
+      <nav class="nav" aria-label="Основная навигация">
+        <button class="nav-btn active" data-page="dashboard"><span>⌂</span> Мой прогресс</button>
+        <button class="nav-btn" data-page="community"><span>♟</span> Игроки</button>
+        <button class="nav-btn" data-page="toons"><span>☺</span> Туны</button>
+        <button class="nav-btn" data-page="twisteds"><span>◉</span> Твистеды</button>
+        <button class="nav-btn" data-page="achievements"><span>✦</span> Достижения</button>
+        <button class="nav-btn" data-page="data"><span>⇄</span> Данные</button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <p>Гостевой прогресс хранится в браузере. После подключения облака — в личном аккаунте.</p><a class="privacy-link" href="privacy.html">Конфиденциальность</a>
+        <button class="ghost-btn" id="mobileClose">Закрыть меню</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <button class="menu-btn" id="menuBtn" aria-label="Открыть меню">☰</button>
+        <div>
+          <h1 id="pageTitle">Обзор прогресса</h1>
+          <p id="pageSubtitle">Вся коллекция, мастерства и исследования в одном месте.</p>
+        </div>
+        <div class="top-actions">
+          <span class="save-state" id="saveState">Сохранено</span>
+          <button class="secondary-btn compact account-btn" id="accountButton">Локально</button>
+          <button class="primary-btn compact" id="quickExport">Экспорт</button>
+        </div>
+      </header>
+
+      <section class="page active" id="page-dashboard"></section>
+      <section class="page" id="page-community"></section>
+      <section class="page" id="page-toons"></section>
+      <section class="page" id="page-twisteds"></section>
+      <section class="page" id="page-achievements"></section>
+      <section class="page" id="page-data"></section>
+    </main>
+  </div>
+
+  <dialog id="toonDialog" class="dialog">
+    <form method="dialog" class="dialog-card" id="toonForm">
+      <div class="dialog-head">
+        <div>
+          <p class="eyebrow">Мастерство туна</p>
+          <h2 id="toonDialogTitle"></h2>
+        </div>
+        <button class="icon-btn" value="cancel" aria-label="Закрыть">×</button>
+      </div>
+      <div id="toonDialogBody"></div>
+      <div class="dialog-actions">
+        <button class="danger-btn" type="button" id="resetToon">Сбросить прогресс</button>
+        <button class="primary-btn" value="default">Готово</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="achievementDialog" class="dialog">
+    <form method="dialog" class="dialog-card" id="achievementForm">
+      <div class="dialog-head">
+        <div>
+          <p class="eyebrow">Новое достижение</p>
+          <h2>Добавить свою цель</h2>
+        </div>
+        <button class="icon-btn" value="cancel">×</button>
+      </div>
+      <div class="form-grid">
+        <label>Название<input name="name" required placeholder="Например: Первый соло-ран" /></label>
+        <label>Уровень<select name="tier"><option>Личное</option><option>Бронза</option><option>Серебро</option><option>Золото</option><option>Радужное</option></select></label>
+        <label class="span-2">Описание<input name="description" required placeholder="Что нужно сделать" /></label>
+        <label>Текущий прогресс<input name="current" type="number" min="0" value="0" /></label>
+        <label>Цель<input name="target" type="number" min="1" value="1" /></label>
+      </div>
+      <div class="dialog-actions">
+        <button class="primary-btn" value="default">Добавить</button>
+      </div>
+    </form>
+  </dialog>
+
+
+  <dialog id="authDialog" class="dialog auth-dialog">
+    <form method="dialog" class="dialog-card">
+      <div class="dialog-head">
+        <div>
+          <p class="eyebrow">Облачный профиль</p>
+          <h2>Аккаунт Dandy’s Progress</h2>
+        </div>
+        <button class="icon-btn" value="cancel" aria-label="Закрыть">×</button>
+      </div>
+
+      <div id="authSetupView" class="auth-view" hidden>
+        <div class="auth-notice">
+          <strong>Облако ещё не подключено</strong>
+          <p>Сайт работает локально. Для регистрации пользователей создай бесплатный проект Supabase и вставь URL и publishable key в файл <code>supabase-config.js</code>. Подробная инструкция лежит в <code>DEPLOY.md</code>.</p>
+        </div>
+      </div>
+
+      <div id="authSignedOutView" class="auth-view" hidden>
+        <div class="form-grid">
+          <label class="span-2">Отображаемое имя<input id="authDisplayName" autocomplete="nickname" placeholder="Например: ukiol"></label>
+          <label class="span-2">Email<input id="authEmail" type="email" autocomplete="email" placeholder="you@example.com"></label>
+          <label class="span-2">Пароль<input id="authPassword" type="password" minlength="6" autocomplete="current-password" placeholder="Минимум 6 символов"></label>
+        </div>
+        <p class="note">При регистрации может потребоваться подтвердить email. После входа прогресс синхронизируется между устройствами.</p>
+        <div class="dialog-actions auth-actions">
+          <button class="secondary-btn" type="button" id="authLogin">Войти</button>
+          <button class="primary-btn" type="button" id="authRegister">Создать аккаунт</button>
+        </div>
+      </div>
+
+      <div id="authSignedInView" class="auth-view" hidden>
+        <div class="account-card">
+          <div class="account-avatar" id="accountAvatar">U</div>
+          <div><strong id="accountName">Пользователь</strong><small id="accountEmail"></small></div>
+        </div>
+        <p class="note" id="cloudStatusText">Прогресс синхронизирован.</p>
+        <div class="dialog-actions auth-actions">
+          <button class="secondary-btn" type="button" id="authEditProfile">Публичный профиль</button>
+          <button class="secondary-btn" type="button" id="authSyncNow">Синхронизировать</button>
+          <button class="danger-btn" type="button" id="authLogout">Выйти</button>
+        </div>
+      </div>
+
+      <div id="authMessage" class="auth-message" aria-live="polite"></div>
+    </form>
+  </dialog>
+
+
+  <dialog id="profileDialog" class="dialog profile-dialog">
+    <form method="dialog" class="dialog-card" id="profileForm">
+      <div class="dialog-head">
+        <div>
+          <p class="eyebrow">Страница игрока</p>
+          <h2>Настроить публичный профиль</h2>
+        </div>
+        <button class="icon-btn" value="cancel" aria-label="Закрыть">×</button>
+      </div>
+      <div class="profile-editor-grid">
+        <div class="profile-preview" id="profilePreview"></div>
+        <div class="form-grid profile-fields">
+          <label>Ник для ссылки<input id="profileUsername" maxlength="24" pattern="[a-z0-9_\-]+" placeholder="ukiol"></label>
+          <label>Отображаемое имя<input id="profileDisplayName" maxlength="32" placeholder="ukiol"></label>
+          <label class="span-2">Коротко о себе<textarea id="profileBio" maxlength="180" rows="3" placeholder="Например: фармлю исследования и учусь соло-ранам"></textarea></label>
+          <label>Тун на аватаре<select id="profileAvatarToon"></select></label>
+          <label class="profile-toggle"><input id="profileIsPublic" type="checkbox" checked><span>Показывать профиль другим игрокам</span></label>
+        </div>
+      </div>
+      <p class="note">В публичный профиль попадают только отметки коллекции, проценты исследований и общая статистика. Email, пароли и личные заметки не публикуются.</p>
+      <div class="dialog-actions">
+        <button type="button" class="secondary-btn" id="copyProfileLink">Скопировать ссылку</button>
+        <button type="button" class="primary-btn" id="savePublicProfile">Сохранить профиль</button>
+      </div>
+      <div id="profileMessage" class="auth-message" aria-live="polite"></div>
+    </form>
+  </dialog>
+
+  <dialog id="publicProfileDialog" class="dialog public-profile-dialog">
+    <div class="dialog-card">
+      <div class="dialog-head">
+        <div>
+          <p class="eyebrow">Профиль игрока</p>
+          <h2 id="publicProfileTitle">Игрок</h2>
+        </div>
+        <button class="icon-btn" id="closePublicProfile" aria-label="Закрыть">×</button>
+      </div>
+      <div id="publicProfileBody"></div>
+    </div>
+  </dialog>
+
+  <input type="file" id="importFile" accept="application/json" hidden />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+  <script src="auth.js"></script>
+</body>
+</html>
