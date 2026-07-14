@@ -16,6 +16,10 @@
   let saveTimer = null;
   let loadingCloud = false;
 
+  window.getDandysSession = () => session;
+  window.getDandysProfile = () => myProfile;
+  window.getDandysSupabase = () => client;
+
   function showMessage(text = '', type = '') {
     message.textContent = window.I18N?.text?.(text) || text;
     message.className = `auth-message ${type}`.trim();
@@ -223,6 +227,7 @@
   async function refreshCommunityProfiles() {
     if (!configured) {
       window.setCommunityState?.({ profiles: [], status: 'setup', error: '' });
+      window.dispatchEvent(new CustomEvent('dandys-auth-change', { detail: { session: null } }));
       return;
     }
     window.setCommunityState?.({ status: 'loading', error: '' });
@@ -248,7 +253,6 @@
       .from('public_profiles')
       .select('user_id, username, display_name, bio, avatar_toon, public_data, updated_at')
       .eq('username', String(username).toLowerCase())
-      .eq('is_public', true)
       .maybeSingle();
     if (error || !data) return;
     const current = community?.profiles || [];
@@ -358,6 +362,7 @@
 
     myProfile = data;
     renderAuth();
+    window.dispatchEvent(new CustomEvent('dandys-profile-change', { detail: { profile: myProfile } }));
     showProfileMessage('Публичный профиль сохранён.', 'good');
     await refreshCommunityProfiles();
   }
@@ -423,6 +428,7 @@
     renderAuth();
     if (!configured) {
       window.setCommunityState?.({ profiles: [], status: 'setup', error: '' });
+      window.dispatchEvent(new CustomEvent('dandys-auth-change', { detail: { session: null } }));
       return;
     }
 
@@ -431,6 +437,7 @@
     const { data } = await client.auth.getSession();
     session = data.session;
     renderAuth();
+    window.dispatchEvent(new CustomEvent('dandys-auth-change', { detail: { session } }));
     if (session) await loadProgress();
     await refreshCommunityProfiles();
 
@@ -439,6 +446,7 @@
       session = newSession;
       if (!session) myProfile = null;
       renderAuth();
+      window.dispatchEvent(new CustomEvent('dandys-auth-change', { detail: { session } }));
       if (session && changedUser) await loadProgress();
       await refreshCommunityProfiles();
     });

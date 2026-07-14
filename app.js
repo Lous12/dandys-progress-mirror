@@ -160,6 +160,7 @@ let community = { profiles:[], status:'loading', error:'' };
 const pages = {
   dashboard: ['Мой прогресс','Личная коллекция, мастерства и исследования.'],
   community: ['Игроки Gardenview','Публичные профили, рейтинг и сравнение прогресса.'],
+  friends: ['Друзья и сообщения','Заявки в друзья, личные сообщения и общение с игроками.'],
   toons: ['Туны','Отмечай полученных тунов, мастерства и винтажные скины.'],
   twisteds: ['Твистеды','Записывай встречи, проценты исследования и полученные тринкеты.'],
   achievements: ['Достижения','Официальные медали и любые собственные цели.'],
@@ -222,6 +223,7 @@ function navigate(page) {
   document.getElementById('pageSubtitle').textContent = pages[page][1];
   document.getElementById('sidebar').classList.remove('open');
   window.I18N?.translate?.(document);
+  if (page === 'friends') window.socialPageOpened?.();
 }
 
 function statCard(label,value,hint,spark) {
@@ -615,7 +617,10 @@ function openPublicProfile(username) {
     <div class="public-profile-head">
       <div class="public-profile-avatar">${profileAvatarMarkup(profile)}</div>
       <div class="public-profile-copy"><span>@${escapeHtml(profile.username)}</span><p>${escapeHtml(profile.bio || 'Игрок пока ничего о себе не написал.')}</p></div>
-      <button class="secondary-btn" id="shareViewedProfile">Скопировать ссылку</button>
+      <div class="public-profile-actions">
+        <button class="secondary-btn" id="shareViewedProfile">Скопировать ссылку</button>
+        <button class="primary-btn" id="friendViewedProfile">Добавить в друзья</button>
+      </div>
     </div>
     <div class="stat-grid public-stat-grid">
       ${statCard('Общий рейтинг', formatNumber(s.score), 'Неофициальные очки трекера', '★')}
@@ -633,6 +638,15 @@ function openPublicProfile(username) {
   if (!dialog.open) dialog.showModal();
   setPublicProfileHash(profile.username);
   document.getElementById('shareViewedProfile').onclick = () => copyPublicLink(profile.username);
+  const friendButton = document.getElementById('friendViewedProfile');
+  if (friendButton) {
+    const ownId = window.getDandysSession?.()?.user?.id;
+    if (ownId && ownId === profile.user_id) friendButton.hidden = true;
+    else {
+      friendButton.textContent = window.socialProfileActionLabel?.(profile.user_id) || 'Добавить в друзья';
+      friendButton.onclick = () => window.socialHandleProfile?.(profile);
+    }
+  }
 }
 
 async function copyPublicLink(username) {
@@ -640,6 +654,11 @@ async function copyPublicLink(username) {
   try { await navigator.clipboard.writeText(link); toast('Ссылка на профиль скопирована'); }
   catch { prompt(tr('Скопируй ссылку:'), link); }
 }
+
+window.upsertCommunityProfile = function upsertCommunityProfile(profile) {
+  if (!profile?.user_id) return;
+  community.profiles = [profile, ...community.profiles.filter(item => item.user_id !== profile.user_id)];
+};
 
 window.setCommunityState = function setCommunityState(next) {
   community = { ...community, ...next };
@@ -819,7 +838,7 @@ function renderSupport() {
 }
 
 function renderAll() {
-  renderDashboard(); renderCommunity(); renderToons(); renderTwisteds(); renderAchievements(); renderData(); renderSupport(); bindDynamic();
+  renderDashboard(); renderCommunity(); renderToons(); renderTwisteds(); renderAchievements(); renderData(); renderSupport(); window.renderSocialPage?.(); bindDynamic();
   window.I18N?.translate?.(document);
 }
 
@@ -959,6 +978,7 @@ window.addEventListener('dandys-language-change', () => {
   if (toonWasOpen) openToonDialog(ui.activeToon);
   if (publicWasOpen && publicUsername) openPublicProfile(publicUsername);
   window.refreshAuthLanguage?.();
+  window.refreshSocialLanguage?.();
 });
 document.getElementById('achievementForm').addEventListener('submit',e=>{
   const fd=new FormData(e.target); const name=String(fd.get('name')||'').trim(); if(!name)return;

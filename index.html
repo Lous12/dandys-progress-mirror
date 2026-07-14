@@ -3,8 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#151827" />
+  <meta name="theme-color" content="#2f2a57" />
   <title>Dandy’s Progress — трекер Dandy’s World</title>
+  <meta name="description" content="Track Toons, Masteries, Twisted Research, Trinkets, friends and messages in Dandy’s World." />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -21,6 +22,7 @@
       <nav class="nav" aria-label="Основная навигация">
         <button class="nav-btn active" data-page="dashboard"><span>⌂</span> Мой прогресс</button>
         <button class="nav-btn" data-page="community"><span>♟</span> Игроки</button>
+        <button class="nav-btn social-nav-btn" data-page="friends"><span>✉</span> Друзья <b class="nav-badge" id="socialUnreadBadge" hidden>0</b></button>
         <button class="nav-btn" data-page="toons"><span>☺</span> Туны</button>
         <button class="nav-btn" data-page="twisteds"><span>◉</span> Твистеды</button>
         <button class="nav-btn" data-page="achievements"><span>✦</span> Достижения</button>
@@ -51,6 +53,7 @@
 
       <section class="page active" id="page-dashboard"></section>
       <section class="page" id="page-community"></section>
+      <section class="page" id="page-friends"></section>
       <section class="page" id="page-toons"></section>
       <section class="page" id="page-twisteds"></section>
       <section class="page" id="page-achievements"></section>
@@ -197,5 +200,6 @@
   <script src="data.js"></script>
   <script src="app.js"></script>
   <script src="auth.js"></script>
+  <script src="social.js"></script>
 </body>
 </html>
