@@ -6,6 +6,11 @@
   <meta name="theme-color" content="#2f2a57" />
   <title>Dandy’s Progress — трекер Dandy’s World</title>
   <meta name="description" content="Track Toons, Masteries, Twisted Research, Trinkets, friends and messages in Dandy’s World." />
+  <link rel="icon" href="favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="favicon-192.png" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="manifest" href="site.webmanifest" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -141,6 +146,7 @@
         <div class="dialog-actions auth-actions">
           <button class="secondary-btn" type="button" id="authEditProfile">Публичный профиль</button>
           <button class="secondary-btn" type="button" id="authSyncNow">Синхронизировать</button>
+          <button class="secondary-btn" type="button" id="authManageBadges" hidden>Управление бейджами</button>
           <button class="danger-btn" type="button" id="authLogout">Выйти</button>
         </div>
       </div>
@@ -193,6 +199,46 @@
     </div>
   </dialog>
 
+
+  <dialog id="badgeAdminDialog" class="dialog badge-admin-dialog">
+    <div class="dialog-card">
+      <div class="dialog-head">
+        <div>
+          <p class="eyebrow">Панель владельца</p>
+          <h2>Бейджи профилей</h2>
+        </div>
+        <button class="icon-btn" id="closeBadgeAdmin" type="button" aria-label="Закрыть">×</button>
+      </div>
+      <div class="badge-admin-intro">
+        <strong>Выдавай игрокам уникальные значки</strong>
+        <p>Укажи игрока, собственное название, эмодзи и описание. Бейдж появится в карточке и публичном профиле.</p>
+      </div>
+      <div class="form-grid badge-admin-form">
+        <label class="span-2">Игрок<select id="badgePlayerSelect"></select></label>
+        <label>Название бейджа<input id="badgeName" maxlength="32" placeholder="Например: Первый участник"></label>
+        <label>Значок<input id="badgeIcon" maxlength="8" placeholder="⭐"></label>
+        <label>Цвет<select id="badgeColor">
+          <option value="gold">Золотой</option>
+          <option value="green">Зелёный</option>
+          <option value="blue">Голубой</option>
+          <option value="purple">Фиолетовый</option>
+          <option value="pink">Розовый</option>
+          <option value="red">Красный</option>
+          <option value="ink">Тёмный</option>
+        </select></label>
+        <label class="span-2">Описание<input id="badgeDescription" maxlength="160" placeholder="За что выдан этот бейдж"></label>
+      </div>
+      <div class="dialog-actions badge-admin-actions">
+        <button class="primary-btn" id="awardBadge" type="button">Выдать бейдж</button>
+      </div>
+      <div id="badgeAdminMessage" class="auth-message" aria-live="polite"></div>
+      <div class="badge-admin-existing">
+        <div class="panel-head"><div><h3>Бейджи выбранного игрока</h3><div class="panel-sub">Удалить бейдж может только администратор сайта</div></div></div>
+        <div id="badgeAdminList"></div>
+      </div>
+    </div>
+  </dialog>
+
   <input type="file" id="importFile" accept="application/json" hidden />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
@@ -201,5 +247,6 @@
   <script src="app.js"></script>
   <script src="auth.js"></script>
   <script src="social.js"></script>
+  <script src="badges.js"></script>
 </body>
 </html>

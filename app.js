@@ -394,6 +394,14 @@ const leaderboardMetrics = {
   totalDistance: { label:'Пройдено метров', short:'метров', get:s=>s.totalDistance, format:v=>formatNumber(v) },
 };
 
+function profileBadgesMarkup(userId, limit = 4) {
+  return window.DANDYS_BADGES?.renderBadges?.(userId, limit) || '';
+}
+
+function badgeAdminButtonMarkup(userId) {
+  return window.DANDYS_BADGES?.adminButtonMarkup?.(userId) || '';
+}
+
 function publicProfileCard(profile) {
   const s = publicStats(profile);
   return `<article class="player-card" data-open-profile="${escapeHtml(profile.username)}" tabindex="0">
@@ -407,6 +415,7 @@ function publicProfileCard(profile) {
       <span class="online-pin" title="Публичный профиль"></span>
     </div>
     <p class="player-bio">${escapeHtml(profile.bio || 'Игрок пока ничего о себе не написал.')}</p>
+    ${profileBadgesMarkup(profile.user_id, 3)}
     <div class="player-stats">
       <span><b>${s.owned}</b> получено</span>
       <span><b>${s.mastered}</b> мастерств</span>
@@ -416,6 +425,7 @@ function publicProfileCard(profile) {
     <div class="player-card-actions">
       <button class="secondary-btn view-player" type="button">Посмотреть</button>
       <button class="ghost-btn compare-player" data-compare-profile="${escapeHtml(profile.username)}" type="button">Сравнить</button>
+      ${badgeAdminButtonMarkup(profile.user_id)}
     </div>
   </article>`;
 }
@@ -620,8 +630,10 @@ function openPublicProfile(username) {
       <div class="public-profile-actions">
         <button class="secondary-btn" id="shareViewedProfile">Скопировать ссылку</button>
         <button class="primary-btn" id="friendViewedProfile">Добавить в друзья</button>
+        ${badgeAdminButtonMarkup(profile.user_id)}
       </div>
     </div>
+    ${profileBadgesMarkup(profile.user_id, 50)}
     <div class="stat-grid public-stat-grid">
       ${statCard('Общий рейтинг', formatNumber(s.score), 'Неофициальные очки трекера', '★')}
       ${statCard('Получено тунов', s.owned, `из ${TOON_DATA.length}`, '☺')}
@@ -659,6 +671,8 @@ window.upsertCommunityProfile = function upsertCommunityProfile(profile) {
   if (!profile?.user_id) return;
   community.profiles = [profile, ...community.profiles.filter(item => item.user_id !== profile.user_id)];
 };
+
+window.getDandysCommunityProfiles = () => community.profiles.slice();
 
 window.setCommunityState = function setCommunityState(next) {
   community = { ...community, ...next };
@@ -848,6 +862,7 @@ function bindDynamic() {
   const communitySearch=document.getElementById('communitySearch'); if(communitySearch) communitySearch.oninput=e=>{ui.communitySearch=e.target.value;renderCommunity();bindDynamic();};
   document.querySelectorAll('[data-open-profile]').forEach(card=>{const open=e=>{if(e?.target?.closest?.('[data-compare-profile]'))return;openPublicProfile(card.dataset.openProfile);};card.onclick=open;card.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open(e);}};});
   document.querySelectorAll('[data-compare-profile]').forEach(button=>button.onclick=e=>{e.stopPropagation();const name=button.dataset.compareProfile;ensureCompareSelection();if(ui.compareA===name){}else if(ui.compareB===name){const old=ui.compareA;ui.compareA=name;ui.compareB=old;}else{ui.compareB=name;}ui.communityView='compare';renderCommunity();bindDynamic();});
+  document.querySelectorAll('[data-award-badge]').forEach(button=>button.onclick=e=>{e.stopPropagation();window.DANDYS_BADGES?.openAdmin?.(button.dataset.awardBadge);});
   const leaderboardMetric=document.getElementById('leaderboardMetric'); if(leaderboardMetric) leaderboardMetric.onchange=e=>{ui.leaderboardMetric=e.target.value;renderCommunity();bindDynamic();};
   const compareA=document.getElementById('compareA'); if(compareA) compareA.onchange=e=>{ui.compareA=e.target.value;if(ui.compareA===ui.compareB)ui.compareB=community.profiles.find(p=>p.username!==ui.compareA)?.username||'';renderCommunity();bindDynamic();};
   const compareB=document.getElementById('compareB'); if(compareB) compareB.onchange=e=>{ui.compareB=e.target.value;if(ui.compareA===ui.compareB)ui.compareA=community.profiles.find(p=>p.username!==ui.compareB)?.username||'';renderCommunity();bindDynamic();};
@@ -979,6 +994,13 @@ window.addEventListener('dandys-language-change', () => {
   if (publicWasOpen && publicUsername) openPublicProfile(publicUsername);
   window.refreshAuthLanguage?.();
   window.refreshSocialLanguage?.();
+  window.DANDYS_BADGES?.refreshLanguage?.();
+});
+window.addEventListener('dandys-badges-change', () => {
+  const publicUsername = new URLSearchParams(location.hash.replace(/^#/, '')).get('player');
+  renderCommunity();
+  bindDynamic();
+  if (document.getElementById('publicProfileDialog')?.open && publicUsername) openPublicProfile(publicUsername);
 });
 document.getElementById('achievementForm').addEventListener('submit',e=>{
   const fd=new FormData(e.target); const name=String(fd.get('name')||'').trim(); if(!name)return;
