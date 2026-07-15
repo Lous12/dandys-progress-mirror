@@ -71,7 +71,26 @@ function seedState() {
     twisteds,
     achievements,
     customAchievements:[],
-    global: { highestFloor:0, totalDistance:0, totalMachines:0, itemsPicked:0, itemsUsed:0, ichor:2829, notes:'' },
+    global: {
+      highestFloor:0,
+      floorsSurvived:0,
+      totalDistance:0,
+      totalMachines:0,
+      blackouts:0,
+      budsHelped:0,
+      uniqueDandyGossip:0,
+      dandyItemsPurchased:0,
+      uniqueDyleGossip:0,
+      dyleMapCompletions:0,
+      giftsReceived:0,
+      giftsSent:0,
+      itemsPicked:0,
+      itemsUsed:0,
+      earnedIchor:0,
+      ichor:2829,
+      skinsOwned:0,
+      notes:''
+    },
   };
 }
 
@@ -266,11 +285,22 @@ function renderDashboard() {
       <div class="panel-head"><div><h3>Общая статистика</h3><div class="panel-sub">Можно переписывать значения из игрового журнала</div></div></div>
       <div class="form-grid" id="globalStats">
         ${globalField('highestFloor','Максимальный этаж')}
+        ${globalField('floorsSurvived','Пережито этажей')}
         ${globalField('totalDistance','Всего пройдено метров')}
         ${globalField('totalMachines','Всего завершено машин')}
+        ${globalField('blackouts','Пережито блэкаутов')}
+        ${globalField('budsHelped','Помощь Bud')}
+        ${globalField('uniqueDandyGossip','Уникальные сплетни Денди')}
+        ${globalField('dandyItemsPurchased','Куплено предметов у Денди')}
+        ${globalField('uniqueDyleGossip','Уникальные сплетни Дайла')}
+        ${globalField('dyleMapCompletions','Прохождения карты Дайла')}
+        ${globalField('giftsReceived','Получено подарков')}
+        ${globalField('giftsSent','Отправлено подарков')}
         ${globalField('itemsPicked','Всего поднято предметов')}
         ${globalField('itemsUsed','Всего использовано предметов')}
+        ${globalField('earnedIchor','Заработано ихора')}
         ${globalField('ichor','Текущий ихор')}
+        ${globalField('skinsOwned','Получено скинов')}
         <label class="span-2">Заметка<textarea data-global="notes" rows="3" placeholder="Например: коплю на Тиган">${escapeHtml(state.global.notes || '')}</textarea></label>
       </div>
     </div>`;
@@ -300,10 +330,22 @@ function buildPublicSnapshot() {
     },
     global: {
       highestFloor: Number(state.global.highestFloor) || 0,
+      floorsSurvived: Number(state.global.floorsSurvived) || 0,
       totalDistance: Number(state.global.totalDistance) || 0,
       totalMachines: Number(state.global.totalMachines) || 0,
+      blackouts: Number(state.global.blackouts) || 0,
+      budsHelped: Number(state.global.budsHelped) || 0,
+      uniqueDandyGossip: Number(state.global.uniqueDandyGossip) || 0,
+      dandyItemsPurchased: Number(state.global.dandyItemsPurchased) || 0,
+      uniqueDyleGossip: Number(state.global.uniqueDyleGossip) || 0,
+      dyleMapCompletions: Number(state.global.dyleMapCompletions) || 0,
+      giftsReceived: Number(state.global.giftsReceived) || 0,
+      giftsSent: Number(state.global.giftsSent) || 0,
       itemsPicked: Number(state.global.itemsPicked) || 0,
       itemsUsed: Number(state.global.itemsUsed) || 0,
+      earnedIchor: Number(state.global.earnedIchor) || 0,
+      ichor: Number(state.global.ichor) || 0,
+      skinsOwned: Number(state.global.skinsOwned) || 0,
     },
     ownedToons: TOON_DATA.filter(t => state.toons[t.id]?.owned).map(t => t.id),
     masteredToons: TOON_DATA.filter(t => state.toons[t.id]?.mastery).map(t => t.id),
@@ -358,10 +400,22 @@ function publicStats(profile) {
     achievements: Number(summary.achievements) || 0,
     achievementTotal: Number(summary.achievementTotal) || 0,
     highestFloor: Number(data.global?.highestFloor) || 0,
+    floorsSurvived: Number(data.global?.floorsSurvived) || 0,
     totalDistance: Number(data.global?.totalDistance) || 0,
     totalMachines: Number(data.global?.totalMachines) || 0,
+    blackouts: Number(data.global?.blackouts) || 0,
+    budsHelped: Number(data.global?.budsHelped) || 0,
+    uniqueDandyGossip: Number(data.global?.uniqueDandyGossip) || 0,
+    dandyItemsPurchased: Number(data.global?.dandyItemsPurchased) || 0,
+    uniqueDyleGossip: Number(data.global?.uniqueDyleGossip) || 0,
+    dyleMapCompletions: Number(data.global?.dyleMapCompletions) || 0,
+    giftsReceived: Number(data.global?.giftsReceived) || 0,
+    giftsSent: Number(data.global?.giftsSent) || 0,
     itemsPicked: Number(data.global?.itemsPicked) || 0,
     itemsUsed: Number(data.global?.itemsUsed) || 0,
+    earnedIchor: Number(data.global?.earnedIchor) || 0,
+    ichor: Number(data.global?.ichor) || 0,
+    skinsOwned: Number(data.global?.skinsOwned) || 0,
   };
   result.score = calculateProfileScore(result);
   return result;
@@ -377,9 +431,13 @@ function calculateProfileScore(s) {
     s.owned * 25 +
     s.achievements * 20 +
     s.highestFloor * 8 +
+    Math.sqrt(Math.max(0, s.floorsSurvived)) * 4 +
     Math.sqrt(Math.max(0, s.totalMachines)) * 9 +
     Math.sqrt(Math.max(0, s.totalDistance) / 100) * 5 +
-    Math.sqrt(Math.max(0, s.itemsUsed)) * 3
+    Math.sqrt(Math.max(0, s.itemsUsed)) * 3 +
+    Math.sqrt(Math.max(0, s.blackouts)) * 2 +
+    Math.sqrt(Math.max(0, s.budsHelped)) * 2 +
+    Math.sqrt(Math.max(0, s.earnedIchor) / 10) * 2
   );
 }
 
@@ -390,8 +448,12 @@ const leaderboardMetrics = {
   trinkets: { label:'Полученные тринкеты', short:'тринкетов', get:s=>s.trinkets, format:v=>`${formatNumber(v)} / ${TWISTED_DATA.length}` },
   researched: { label:'Исследования на 100%', short:'исследований', get:s=>s.researched, format:v=>`${formatNumber(v)} / ${TWISTED_DATA.length}` },
   highestFloor: { label:'Максимальный этаж', short:'этаж', get:s=>s.highestFloor, format:v=>formatNumber(v) },
+  floorsSurvived: { label:'Пережито этажей', short:'этажей', get:s=>s.floorsSurvived, format:v=>formatNumber(v) },
   totalMachines: { label:'Выполнено машин', short:'машин', get:s=>s.totalMachines, format:v=>formatNumber(v) },
   totalDistance: { label:'Пройдено метров', short:'метров', get:s=>s.totalDistance, format:v=>formatNumber(v) },
+  earnedIchor: { label:'Заработано ихора', short:'ихора', get:s=>s.earnedIchor, format:v=>formatNumber(v) },
+  blackouts: { label:'Пережито блэкаутов', short:'блэкаутов', get:s=>s.blackouts, format:v=>formatNumber(v) },
+  budsHelped: { label:'Помощь Bud', short:'раз', get:s=>s.budsHelped, format:v=>formatNumber(v) },
 };
 
 function profileBadgesMarkup(userId, limit = 4) {
@@ -544,9 +606,13 @@ function renderComparison() {
         ${compareMetricRow('Тринкеты', sa.trinkets, sb.trinkets, v=>`${v}/${TWISTED_DATA.length}`)}
         ${compareMetricRow('Исследования на 100%', sa.researched, sb.researched, v=>`${v}/${TWISTED_DATA.length}`)}
         ${compareMetricRow('Максимальный этаж', sa.highestFloor, sb.highestFloor)}
+        ${compareMetricRow('Пережито этажей', sa.floorsSurvived, sb.floorsSurvived)}
         ${compareMetricRow('Выполнено машин', sa.totalMachines, sb.totalMachines)}
         ${compareMetricRow('Пройдено метров', sa.totalDistance, sb.totalDistance)}
         ${compareMetricRow('Использовано предметов', sa.itemsUsed, sb.itemsUsed)}
+        ${compareMetricRow('Пережито блэкаутов', sa.blackouts, sb.blackouts)}
+        ${compareMetricRow('Помощь Bud', sa.budsHelped, sb.budsHelped)}
+        ${compareMetricRow('Заработано ихора', sa.earnedIchor, sb.earnedIchor)}
       </div>
     </div>
     <div class="compare-masteries">
@@ -641,6 +707,7 @@ function openPublicProfile(username) {
       ${statCard('Тринкеты', s.trinkets, `исследовано на 100%: ${s.researched}`, '◉')}
       ${statCard('Макс. этаж', s.highestFloor, `${formatNumber(data.global?.totalMachines || 0)} машин`, '▲')}
     </div>
+    <div class="public-profile-section"><div class="panel-head"><div><h3>Общая статистика</h3><div class="panel-sub">Основные числа из игрового журнала</div></div></div><div class="player-stats"><span><b>${formatNumber(s.floorsSurvived)}</b> этажей пережито</span><span><b>${formatNumber(s.blackouts)}</b> блэкаутов</span><span><b>${formatNumber(s.earnedIchor)}</b> заработано ихора</span><span><b>${formatNumber(s.budsHelped)}</b> Bud помог</span><span><b>${formatNumber(s.dyleMapCompletions)}</b> карт Дайла</span><span><b>${formatNumber(s.skinsOwned)}</b> скинов</span></div></div>
     <div class="public-profile-section"><div class="panel-head"><div><h3>Закрытые мастерства</h3><div class="panel-sub">Туны с полученным мастерством</div></div></div>${publicToonTiles(data.masteredToons, 'Мастерства пока не отмечены.')}</div>
     <div class="public-profile-section"><div class="panel-head"><div><h3>Полученные туны</h3><div class="panel-sub">Коллекция игрока</div></div></div>${publicToonTiles(data.ownedToons, 'Полученные туны пока не отмечены.')}</div>
     <div class="public-profile-section"><div class="panel-head"><div><h3>Исследования твистедов</h3><div class="panel-sub">Сначала показаны самые заполненные</div></div></div>${publicTwistedTiles(data.twisteds)}</div>
