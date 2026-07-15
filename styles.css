@@ -3102,3 +3102,66 @@ textarea:focus {
   .page { padding: 18px 14px 42px !important; }
   .social-contacts { border-right: 0 !important; border-bottom: 1px solid #e1dbcf !important; }
 }
+
+/* v15 — make status chips clearly distinct when completed */
+.check-row { gap: 10px !important; }
+
+.check-chip span {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  background: #fffdfa !important;
+  color: #66616f !important;
+  border: 1.5px solid #d8d1c3 !important;
+  transition: background .16s ease, color .16s ease, border-color .16s ease, box-shadow .16s ease, transform .16s ease;
+}
+
+.check-chip span::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #d7d0c4;
+  flex: 0 0 auto;
+  transition: background .16s ease, transform .16s ease;
+}
+
+.check-chip input:checked + span {
+  color: #fff !important;
+  border-color: transparent !important;
+  box-shadow: 0 6px 14px rgba(66,56,82,.10) !important;
+  transform: translateY(-1px);
+}
+
+.check-chip input:checked + span::before {
+  content: "✓";
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(255,255,255,.24);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 900;
+  transform: none;
+}
+
+/* Different active colors so statuses don't look identical */
+.check-row .check-chip:nth-child(1) input:checked + span {
+  background: linear-gradient(180deg, #7fb3c8, #6aa0b8) !important;
+}
+.check-row .check-chip:nth-child(2) input:checked + span {
+  background: linear-gradient(180deg, #84b97f, #6fa26a) !important;
+}
+.check-row .check-chip:nth-child(3) input:checked + span {
+  background: linear-gradient(180deg, #9a84d1, #8570bc) !important;
+}
+
+.check-chip input:focus-visible + span {
+  outline: 3px solid rgba(138,116,201,.18);
+  outline-offset: 2px;
+}
