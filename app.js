@@ -85,7 +85,6 @@ function seedState() {
       giftsReceived:0,
       giftsSent:0,
       itemsPicked:0,
-      itemsUsed:0,
       earnedIchor:0,
       ichor:2829,
       skinsOwned:0,
@@ -297,7 +296,6 @@ function renderDashboard() {
         ${globalField('giftsReceived','Получено подарков')}
         ${globalField('giftsSent','Отправлено подарков')}
         ${globalField('itemsPicked','Всего поднято предметов')}
-        ${globalField('itemsUsed','Всего использовано предметов')}
         ${globalField('earnedIchor','Заработано ихора')}
         ${globalField('ichor','Текущий ихор')}
         ${globalField('skinsOwned','Получено скинов')}
@@ -342,7 +340,6 @@ function buildPublicSnapshot() {
       giftsReceived: Number(state.global.giftsReceived) || 0,
       giftsSent: Number(state.global.giftsSent) || 0,
       itemsPicked: Number(state.global.itemsPicked) || 0,
-      itemsUsed: Number(state.global.itemsUsed) || 0,
       earnedIchor: Number(state.global.earnedIchor) || 0,
       ichor: Number(state.global.ichor) || 0,
       skinsOwned: Number(state.global.skinsOwned) || 0,
@@ -412,7 +409,6 @@ function publicStats(profile) {
     giftsReceived: Number(data.global?.giftsReceived) || 0,
     giftsSent: Number(data.global?.giftsSent) || 0,
     itemsPicked: Number(data.global?.itemsPicked) || 0,
-    itemsUsed: Number(data.global?.itemsUsed) || 0,
     earnedIchor: Number(data.global?.earnedIchor) || 0,
     ichor: Number(data.global?.ichor) || 0,
     skinsOwned: Number(data.global?.skinsOwned) || 0,
@@ -434,7 +430,6 @@ function calculateProfileScore(s) {
     Math.sqrt(Math.max(0, s.floorsSurvived)) * 4 +
     Math.sqrt(Math.max(0, s.totalMachines)) * 9 +
     Math.sqrt(Math.max(0, s.totalDistance) / 100) * 5 +
-    Math.sqrt(Math.max(0, s.itemsUsed)) * 3 +
     Math.sqrt(Math.max(0, s.blackouts)) * 2 +
     Math.sqrt(Math.max(0, s.budsHelped)) * 2 +
     Math.sqrt(Math.max(0, s.earnedIchor) / 10) * 2
@@ -609,7 +604,6 @@ function renderComparison() {
         ${compareMetricRow('Пережито этажей', sa.floorsSurvived, sb.floorsSurvived)}
         ${compareMetricRow('Выполнено машин', sa.totalMachines, sb.totalMachines)}
         ${compareMetricRow('Пройдено метров', sa.totalDistance, sb.totalDistance)}
-        ${compareMetricRow('Использовано предметов', sa.itemsUsed, sb.itemsUsed)}
         ${compareMetricRow('Пережито блэкаутов', sa.blackouts, sb.blackouts)}
         ${compareMetricRow('Помощь Bud', sa.budsHelped, sb.budsHelped)}
         ${compareMetricRow('Заработано ихора', sa.earnedIchor, sb.earnedIchor)}
